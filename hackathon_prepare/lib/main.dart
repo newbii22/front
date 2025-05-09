@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:hackathon_prepare/clientele/clientele_login.dart';
 import 'package:hackathon_prepare/guardian/guardian_login.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 
@@ -62,7 +63,7 @@ class MyHomePage extends StatelessWidget {
                   Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (BuildContext context) {
-                        return GuardianLogin();
+                        return ClienteleLogin();
                       },
                     ),
                   );
