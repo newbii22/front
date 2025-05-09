@@ -38,7 +38,7 @@ class _GuardianSignUpState extends State<GuardianSignUp> {
       final response = await http.get(
         Uri.parse(
           '${ApiConfig.baseUrl}/api/check-safe?memberId=${IDprompt}&latitude=${LATprompt}&longtitude=${LONGprompt}',
-        ), // 설정 파일의 baseUrl 사용
+        ),
       );
 
       if (!mounted) return;

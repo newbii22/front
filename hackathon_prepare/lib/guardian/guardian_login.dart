@@ -114,7 +114,23 @@ class _GuardianLoginState extends State<GuardianLogin> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Guardian Login')),
+      appBar: AppBar(
+        title: const Text('Guardian Login'),
+        actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (BuildContext context) {
+                    return Guardian();
+                  },
+                ),
+              );
+            },
+            icon: Icon(Icons.notifications),
+          ),
+        ],
+      ),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(16.0),

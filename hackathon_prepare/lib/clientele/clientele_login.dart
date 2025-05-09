@@ -1,17 +1,31 @@
 import 'package:flutter/material.dart';
-import 'package:hackathon_prepare/clientele/clientele_main.dart';
-import 'package:hackathon_prepare/clientele/clientele_sign_up.dart';
-import 'package:hackathon_prepare/kakao_login.dart';
-import 'package:hackathon_prepare/kakao_view_model.dart';
+import 'package:hackathon_prepare/clientele/clientele_main.dart'; // Clientele() 화면 import
+import 'package:hackathon_prepare/clientele/clientele_sign_up.dart'; // ClienteleSignUp() 화면 import
+// import 'package:hackathon_prepare/kakao_login.dart'; // 필요시 주석 해제
+// import 'package:hackathon_prepare/kakao_view_model.dart'; // 필요시 주석 해제
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:hackathon_prepare/config/api_config.dart';
+import 'package:hackathon_prepare/config/api_config.dart'; // ApiConfig.baseUrl 사용
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 Future<void> main() async {
-  // .env 파일 로드
+  WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
-  runApp(ClienteleLogin());
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Clientele App', // 앱 타이틀 변경
+      home: ClienteleLogin(),
+      routes: {
+        '/signup': (context) => ClienteleSignUp(),
+        '/main': (context) => Clientele(),
+      },
+    );
+  }
 }
 
 class ClienteleLogin extends StatefulWidget {
@@ -22,198 +36,181 @@ class ClienteleLogin extends StatefulWidget {
 }
 
 class _ClienteleLoginState extends State<ClienteleLogin> {
-  String? responseF = '';
+  String? apiResponse = '';
   bool _isLoading = false;
 
-  Future<void> pingServer() async {
+  TextEditingController idController = TextEditingController();
+  TextEditingController pwController = TextEditingController();
+
+  Future<void> attemptLogin() async {
+    if (_isLoading) return;
+
     if (!mounted) return;
     setState(() {
       _isLoading = true;
-      responseF = '서버 응답 기다리는 중...';
+      apiResponse = '로그인 시도 중...';
     });
 
-    String localResponseF = '';
+    final String id = idController.text;
+    final String password = pwController.text;
+
+    if (id.isEmpty) {
+      if (!mounted) return;
+      setState(() {
+        apiResponse = 'ID를 입력해주세요.';
+        _isLoading = false;
+      });
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(apiResponse!)));
+      return;
+    }
+
+    String serverResponseStatus = '';
     try {
-      final IDprompt = Uri.encodeComponent(idPrompt);
+      final encodedId = Uri.encodeComponent(id);
       final response = await http.get(
-        Uri.parse('${ApiConfig.baseUrl}/api/check-safe?memberId=${IDprompt}'),
+        Uri.parse('${ApiConfig.baseUrl}/api/check-safe?memberId=$encodedId'),
       );
 
       if (!mounted) return;
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        print(data); // 예: { message: "pong" }
+        print("API Response Data: $data");
         String? message = data['message'] as String?;
-        if (message != null) {
-          localResponseF = message;
+        if (message == 'success') {
+          serverResponseStatus = 'success';
         } else {
-          localResponseF = 'Response did not contain a message';
+          serverResponseStatus = message ?? '로그인 실패: 서버 응답 메시지 없음';
         }
       } else {
         print('Request failed with status: ${response.statusCode}.');
-        localResponseF = 'Request failed: ${response.statusCode}';
+        serverResponseStatus = '로그인 실패: 서버 오류 ${response.statusCode}';
       }
     } catch (e) {
       print('Error during API call: $e');
-      localResponseF = 'Error during API call';
+      serverResponseStatus = '로그인 중 오류 발생: $e';
     }
 
     if (!mounted) return;
 
     setState(() {
-      responseF = localResponseF;
-      _isLoading = false; // 로딩 종료
+      apiResponse = serverResponseStatus;
+      _isLoading = false;
     });
 
-    if (responseF == 'success') {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (BuildContext context) {
-            return Clientele();
-          },
-        ),
-      );
+    if (serverResponseStatus == 'success') {
+      Navigator.of(context).pushReplacementNamed('/main');
     } else {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Login failed: $responseF')));
+      ).showSnackBar(SnackBar(content: Text(apiResponse ?? "알 수 없는 오류")));
     }
   }
-
-  final viewModel = KakaoLoginViewModel(KakaoLogin());
-
-  TextEditingController idController = TextEditingController();
-  TextEditingController pwController = TextEditingController();
-
-  String idPrompt = '';
-  String pwPrompt = '';
-
-  Future<void> sendPrompt() async {
-    setState(() {
-      idPrompt = idController.text;
-      pwPrompt = pwController.text;
-    });
-    await pingServer();
-  }
+  // final viewModel = KakaoLoginViewModel(KakaoLogin());
+  // Future<void> signInWithKakao() async { ... }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Clientele Login'),
-        automaticallyImplyLeading: false,
-        leading: IconButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          icon: const Icon(Icons.arrow_back_ios),
-        ),
+        actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (BuildContext context) {
+                    return Clientele();
+                  },
+                ),
+              );
+            },
+            icon: Icon(Icons.notifications),
+          ),
+        ],
       ),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: Column(
-            //mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              TextField(
-                controller: idController,
-                decoration: InputDecoration(
-                  labelText: 'ID',
-                  border: OutlineInputBorder(),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                TextField(
+                  controller: idController,
+                  decoration: InputDecoration(
+                    labelText: 'ID',
+                    border: OutlineInputBorder(),
+                  ),
                 ),
-              ),
-              SizedBox(height: 12),
-              TextField(
-                controller: pwController,
-                decoration: InputDecoration(
-                  labelText: 'PW',
-                  border: OutlineInputBorder(),
+                SizedBox(height: 12),
+                TextField(
+                  controller: pwController,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: 'PW',
+                    border: OutlineInputBorder(),
+                  ),
                 ),
-              ),
-              SizedBox(height: 12),
-              ElevatedButton(onPressed: sendPrompt, child: Text('Send')),
-              SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (BuildContext context) {
-                        return Clientele();
-                      },
-                    ),
-                  );
-                },
-                child: Text('Sign In'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (BuildContext context) {
-                        return ClienteleSignUp();
-                      },
-                    ),
-                  );
-                },
-                child: Text('Sign Up'),
-              ),
-
-              Expanded(
-                child: Column(
-                  children: [
-                    Text(idPrompt, style: TextStyle(fontSize: 16)),
-                    Text(pwPrompt, style: TextStyle(fontSize: 16)),
-                    Text(responseF!, style: TextStyle(fontSize: 16)),
-                  ],
+                SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: _isLoading ? null : attemptLogin,
+                  child:
+                      _isLoading
+                          ? CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2.0,
+                          )
+                          : Text('Login'),
                 ),
-              ),
-              /*
-              Expanded(
-                child: ListView(
-                  children: [
-                    if (viewModel
-                            .user
-                            ?.kakaoAccount
-                            ?.profile
-                            ?.profileImageUrl !=
-                        null)
-                      CircleAvatar(
-                        radius: 100,
-                        backgroundImage: NetworkImage(
-                          viewModel
-                                  .user
-                                  ?.kakaoAccount
-                                  ?.profile
-                                  ?.profileImageUrl ??
-                              '',
-                        ),
+                SizedBox(height: 12),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (BuildContext context) {
+                          return ClienteleSignUp();
+                        },
                       ),
-                    Center(
-                      child: Text(
-                        viewModel.user?.kakaoAccount?.profile?.nickname ?? '',
-                        style: const TextStyle(fontSize: 36.0),
-                      ),
-                    ),
-                    ElevatedButton(
-                      onPressed: () async {
-                        if (viewModel.user == null) {
-                          await viewModel.login();
-                        } else {
-                          await viewModel.logout();
-                        }
-                        setState(() {
-                          // 로그인 / 로그아웃 후에 화면 갱신
-                        });
-                      },
-                      child: Text(
-                        viewModel.user == null ? '카카오 로그인' : '카카오 로그아웃',
-                      ),
-                    ),
-                  ],
+                    );
+                  },
+                  child: Text('회원이 아니신가요? Sign Up'),
                 ),
-              ),*/
-            ],
+                SizedBox(height: 24),
+                /*
+                ElevatedButton(
+                  onPressed: () {
+                    // signInWithKakao();
+                  },
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.yellow),
+                  child: Text('카카오 로그인'),
+                ),
+                */
+                if (apiResponse != null &&
+                    apiResponse!.isNotEmpty &&
+                    !_isLoading)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 20.0),
+                    child: Text(
+                      apiResponse!,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color:
+                            apiResponse == 'success' ||
+                                    (apiResponse != null &&
+                                        apiResponse!.toLowerCase().contains(
+                                          '성공',
+                                        ))
+                                ? Colors.green
+                                : Colors.red,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       ),
