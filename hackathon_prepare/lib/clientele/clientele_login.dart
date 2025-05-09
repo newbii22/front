@@ -2,8 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:hackathon_prepare/clientele/clientele_main.dart';
 import 'package:hackathon_prepare/clientele/clientele_sign_up.dart';
 import 'package:hackathon_prepare/kakao_login.dart';
-import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'package:hackathon_prepare/kakao_view_model.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:hackathon_prepare/config/api_config.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+Future<void> main() async {
+  // .env 파일 로드
+  await dotenv.load(fileName: ".env");
+  runApp(ClienteleLogin());
+}
 
 class ClienteleLogin extends StatefulWidget {
   ClienteleLogin({super.key});
@@ -13,6 +22,65 @@ class ClienteleLogin extends StatefulWidget {
 }
 
 class _ClienteleLoginState extends State<ClienteleLogin> {
+  String? responseF = '';
+  bool _isLoading = false;
+
+  Future<void> pingServer() async {
+    if (!mounted) return;
+    setState(() {
+      _isLoading = true;
+      responseF = '서버 응답 기다리는 중...';
+    });
+
+    String localResponseF = '';
+    try {
+      final IDprompt = Uri.encodeComponent(idPrompt);
+      final response = await http.get(
+        Uri.parse('${ApiConfig.baseUrl}/api/check-safe?memberId=${IDprompt}'),
+      );
+
+      if (!mounted) return;
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        print(data); // 예: { message: "pong" }
+        String? message = data['message'] as String?;
+        if (message != null) {
+          localResponseF = message;
+        } else {
+          localResponseF = 'Response did not contain a message';
+        }
+      } else {
+        print('Request failed with status: ${response.statusCode}.');
+        localResponseF = 'Request failed: ${response.statusCode}';
+      }
+    } catch (e) {
+      print('Error during API call: $e');
+      localResponseF = 'Error during API call';
+    }
+
+    if (!mounted) return;
+
+    setState(() {
+      responseF = localResponseF;
+      _isLoading = false; // 로딩 종료
+    });
+
+    if (responseF == 'success') {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (BuildContext context) {
+            return Clientele();
+          },
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Login failed: $responseF')));
+    }
+  }
+
   final viewModel = KakaoLoginViewModel(KakaoLogin());
 
   TextEditingController idController = TextEditingController();
@@ -24,10 +92,9 @@ class _ClienteleLoginState extends State<ClienteleLogin> {
   Future<void> sendPrompt() async {
     setState(() {
       idPrompt = idController.text;
-    });
-    setState(() {
       pwPrompt = pwController.text;
     });
+    await pingServer();
   }
 
   @override
@@ -49,7 +116,6 @@ class _ClienteleLoginState extends State<ClienteleLogin> {
           child: Column(
             //mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              /*
               TextField(
                 controller: idController,
                 decoration: InputDecoration(
@@ -67,7 +133,7 @@ class _ClienteleLoginState extends State<ClienteleLogin> {
               ),
               SizedBox(height: 12),
               ElevatedButton(onPressed: sendPrompt, child: Text('Send')),
-              SizedBox(height: 24),*/
+              SizedBox(height: 24),
               ElevatedButton(
                 onPressed: () {
                   Navigator.of(context).push(
@@ -93,15 +159,16 @@ class _ClienteleLoginState extends State<ClienteleLogin> {
                 child: Text('Sign Up'),
               ),
 
-              /*
               Expanded(
                 child: Column(
                   children: [
                     Text(idPrompt, style: TextStyle(fontSize: 16)),
                     Text(pwPrompt, style: TextStyle(fontSize: 16)),
+                    Text(responseF!, style: TextStyle(fontSize: 16)),
                   ],
                 ),
-              ),*/
+              ),
+              /*
               Expanded(
                 child: ListView(
                   children: [
@@ -145,7 +212,7 @@ class _ClienteleLoginState extends State<ClienteleLogin> {
                     ),
                   ],
                 ),
-              ),
+              ),*/
             ],
           ),
         ),
