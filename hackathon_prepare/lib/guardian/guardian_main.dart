@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hackathon_prepare/guardian/guardian_notification.dart';
 import 'package:hackathon_prepare/guardian/home_page.dart';
 import 'package:hackathon_prepare/guardian/page2.dart';
 import 'package:hackathon_prepare/guardian/page3.dart';
@@ -41,7 +42,13 @@ class _RootPageState extends State<RootPage> {
         ),
         title: Text('위치 보기'),
         actions: [
-          IconButton(onPressed: () {}, icon: Icon(Icons.notifications)),
+          IconButton(onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (BuildContext context){
+                return GuardianNotification();
+              })
+            );
+          }, icon: Icon(Icons.notifications)),
         ],
       ),
       body: pages[currentPage],

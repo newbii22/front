@@ -68,8 +68,8 @@ class _HomePageState extends State<HomePage> {
           myLocationEnabled: true,
         ),
         Positioned(
-          bottom: 20,
-          right: 20,
+          bottom: 30,
+          left: 20,
           child: FloatingActionButton(
               onPressed: _goToCurrentLocation,
               child: const Icon(Icons.my_location),
