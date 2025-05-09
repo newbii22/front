@@ -49,7 +49,6 @@ class _GuardianLoginState extends State<GuardianLogin> {
           child: Column(
             //mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              /*
               TextField(
                 controller: idController,
                 decoration: InputDecoration(
@@ -67,7 +66,7 @@ class _GuardianLoginState extends State<GuardianLogin> {
               ),
               SizedBox(height: 12),
               ElevatedButton(onPressed: sendPrompt, child: Text('Send')),
-              SizedBox(height: 24),*/
+              SizedBox(height: 24),
               ElevatedButton(
                 onPressed: () {
                   Navigator.of(context).push(
@@ -93,7 +92,6 @@ class _GuardianLoginState extends State<GuardianLogin> {
                 child: Text('Sign Up'),
               ),
 
-              /*
               Expanded(
                 child: Column(
                   children: [
@@ -101,7 +99,8 @@ class _GuardianLoginState extends State<GuardianLogin> {
                     Text(pwPrompt, style: TextStyle(fontSize: 16)),
                   ],
                 ),
-              ),*/
+              ),
+              /*
               Expanded(
                 child: ListView(
                   children: [
@@ -145,7 +144,7 @@ class _GuardianLoginState extends State<GuardianLogin> {
                     ),
                   ],
                 ),
-              ),
+              ),*/
             ],
           ),
         ),

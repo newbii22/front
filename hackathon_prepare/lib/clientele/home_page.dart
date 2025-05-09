@@ -102,7 +102,7 @@ class _HomePageState extends State<HomePage> {
             Expanded(
               child: SingleChildScrollView(
                 child: Text(
-                  '위도: $latitude\n경도: $longitude',
+                  '위도: $latitude\n경도: $longitude \n $statusMessage',
                   style: TextStyle(fontSize: 16),
                 ),
               ),
