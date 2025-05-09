@@ -1,1 +1,3 @@
 hackathon/
+hackathon_prepare/lib/config/api_config.dart
+hackathon_prepare/android/app/src/main/AndroidManifest.xml
