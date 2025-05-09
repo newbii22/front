@@ -31,7 +31,16 @@ class _RootPageState extends State<RootPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('This is AppBar')),
+      appBar: AppBar(
+        leading: Icon(Icons.arrow_back_ios),
+        title: Text('위치 보기'),
+        actions: [
+          IconButton(
+              onPressed: (){},
+              icon: Icon(Icons.notifications)
+          )
+        ],
+      ),
       body: pages[currentPage],
       bottomNavigationBar: NavigationBar(
         destinations: const [

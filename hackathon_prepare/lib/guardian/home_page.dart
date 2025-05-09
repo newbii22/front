@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'dart:async';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+//import 'dart:async';
 
 class HomePage extends StatefulWidget {
   HomePage({super.key});
@@ -9,40 +10,21 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  TextEditingController tcontroller = TextEditingController();
+  late GoogleMapController mapController;
 
-  String tprompt = '';
+  final LatLng _center = const LatLng(37.550631, 127.074073);
 
-  Future<void> sendPrompt() async {
-    setState(() {
-      tprompt = tcontroller.text;
-    });
+  void _onMapCreated(GoogleMapController controller){
+    mapController = controller;
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: tcontroller,
-              decoration: InputDecoration(
-                labelText: 'Input',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            SizedBox(height: 12),
-            ElevatedButton(onPressed: sendPrompt, child: Text('Send')),
-            SizedBox(height: 24),
-            Expanded(
-              child: SingleChildScrollView(
-                child: Text(tprompt, style: TextStyle(fontSize: 16)),
-              ),
-            ),
-          ],
-        ),
+    return GoogleMap(
+      onMapCreated: _onMapCreated,
+      initialCameraPosition: CameraPosition(
+        target: _center,
+        zoom: 11.0,
       ),
     );
   }
