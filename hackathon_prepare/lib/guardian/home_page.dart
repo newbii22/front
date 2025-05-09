@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:location/location.dart';
 import 'dart:async';
 
 class HomePage extends StatefulWidget {
@@ -9,41 +11,71 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  TextEditingController tcontroller = TextEditingController();
+  final Completer<GoogleMapController> _controller = Completer();
+  final LatLng _center = const LatLng(37.550631, 127.074073);
 
-  String tprompt = '';
+  void _onMapCreated(GoogleMapController controller) {
+    _controller.complete(controller);
+  }
 
-  Future<void> sendPrompt() async {
-    setState(() {
-      tprompt = tcontroller.text;
-    });
+  Future<void> _goToCurrentLocation() async {
+    Location location = Location();
+    bool servicedEnable = await location.serviceEnabled();
+    
+    if (!servicedEnable) {
+      servicedEnable = await location.requestService();
+      if (!servicedEnable) {
+        print("위치활성화ㄴㄴ");
+        return;
+      }
+    }
+
+    PermissionStatus permissionGranted = await location.hasPermission();
+
+    if (permissionGranted == PermissionStatus.denied) {
+      permissionGranted = await location.requestPermission();
+      if (permissionGranted != PermissionStatus.granted) {
+        print('권한ㄴㄴ');
+        return;
+      }
+    }
+
+    try {
+      final currentLocation = await location.getLocation();
+      final GoogleMapController controller = await _controller.future;
+
+      controller.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(
+            target: LatLng(
+                currentLocation.latitude!, currentLocation.longitude!),
+            zoom: 15.0,
+          ),
+        ),
+      );
+    } catch(e){
+      print('위치못가져옴!');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: tcontroller,
-              decoration: InputDecoration(
-                labelText: 'Input',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            SizedBox(height: 12),
-            ElevatedButton(onPressed: sendPrompt, child: Text('Send')),
-            SizedBox(height: 24),
-            Expanded(
-              child: SingleChildScrollView(
-                child: Text(tprompt, style: TextStyle(fontSize: 16)),
-              ),
-            ),
-          ],
+    return Stack(
+      children: [
+        GoogleMap(
+          onMapCreated: _onMapCreated,
+          initialCameraPosition: CameraPosition(target: _center, zoom: 15.0),
+          myLocationEnabled: true,
         ),
-      ),
+        Positioned(
+          bottom: 30,
+          left: 20,
+          child: FloatingActionButton(
+              onPressed: _goToCurrentLocation,
+              child: const Icon(Icons.my_location),
+          )
+        )
+      ],
     );
   }
 }
