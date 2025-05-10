@@ -62,7 +62,7 @@ class _RootPageState extends State<RootPage> {
         destinations: const [
           NavigationDestination(icon: Icon(Icons.home), label: 'Home'),
           NavigationDestination(icon: Icon(Icons.settings), label: 'Setting'),
-          NavigationDestination(icon: Icon(Icons.add), label: 'Add'),
+          //NavigationDestination(icon: Icon(Icons.add), label: 'Add'),
         ],
         onDestinationSelected: (int index) {
           setState(() {

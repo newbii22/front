@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hackathon_prepare/guardian/guardian_login.dart';
 import 'package:hackathon_prepare/guardian/guardian_main.dart';
 import 'package:kpostal/kpostal.dart';
 import 'package:http/http.dart' as http;
@@ -112,7 +113,7 @@ class _GuardianSignUpState extends State<GuardianSignUp> {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (BuildContext context) {
-          return Guardian();
+          return GuardianLogin();
         },
       ),
     );
@@ -147,6 +148,7 @@ class _GuardianSignUpState extends State<GuardianSignUp> {
               SizedBox(height: 12),
               TextField(
                 controller: pwController,
+                obscureText: true,
                 decoration: InputDecoration(
                   labelText: 'PW',
                   border: OutlineInputBorder(),

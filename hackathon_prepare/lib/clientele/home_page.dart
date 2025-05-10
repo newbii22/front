@@ -89,6 +89,7 @@ class _HomePageState extends State<HomePage> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
+            /*
             TextField(
               controller: tcontroller,
               decoration: InputDecoration(
@@ -97,7 +98,7 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             SizedBox(height: 12),
-            ElevatedButton(onPressed: sendPrompt, child: Text('Send')),
+            ElevatedButton(onPressed: sendPrompt, child: Text('Send')),*/
             SizedBox(height: 24),
             Expanded(
               child: SingleChildScrollView(

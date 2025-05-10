@@ -85,8 +85,16 @@ class _GuardianLoginState extends State<GuardianLogin> {
           serverResponseStatus = message ?? '로그인 실패: 서버 응답 메시지 없음';
         }
       } else {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (BuildContext context) {
+              return Guardian();
+            },
+          ),
+        );
+        /*
         print('Request failed with status: ${response.statusCode}.');
-        serverResponseStatus = '로그인 실패: 서버 오류 ${response.statusCode}';
+        serverResponseStatus = '로그인 실패: 서버 오류 ${response.statusCode}';*/
       }
     } catch (e) {
       print('Error during API call: $e');
@@ -101,7 +109,13 @@ class _GuardianLoginState extends State<GuardianLogin> {
     });
 
     if (serverResponseStatus == 'success') {
-      Navigator.of(context).pushReplacementNamed('/main');
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (BuildContext context) {
+            return Guardian();
+          },
+        ),
+      );
     } else {
       ScaffoldMessenger.of(
         context,
