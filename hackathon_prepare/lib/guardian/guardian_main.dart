@@ -34,21 +34,27 @@ class _RootPageState extends State<RootPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        /*
         leading: IconButton(
           onPressed: () {
             Navigator.of(context).pop();  //뒤로가기가 정상적으로 작동하지 않음!!: MaterialApp()때문이라던데 음..
           },
           icon: Icon(Icons.arrow_back_ios),
-        ),
+        ),*/
         title: Text('위치 보기'),
         actions: [
-          IconButton(onPressed: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(builder: (BuildContext context){
-                return GuardianNotification();
-              })
-            );
-          }, icon: Icon(Icons.notifications)),
+          IconButton(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (BuildContext context) {
+                    return GuardianNotification();
+                  },
+                ),
+              );
+            },
+            icon: Icon(Icons.notifications),
+          ),
         ],
       ),
       body: pages[currentPage],
